@@ -6,12 +6,12 @@ Slyscan is a Python tool for parallelized port scanning using threading, providi
 
 - Multi-threaded port scanning for multiple hosts simultaneously
 - Retrieves banners for open ports (if available)
-- Utilizes the `concurrent.futures.ThreadPoolExecutor` for efficient parallelization
 
 ## Requirements
 
 - Python 3.x
-- Install dependencies using `pip install -r requirements.txt`
+- Rich
+    -`pip install rich`
 
 ## Usage
 
