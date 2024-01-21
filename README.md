@@ -10,10 +10,10 @@ Slyscan is a Python tool for parallelized port scanning using threading, providi
 ## Requirements
 
 - Python 3.x
-- Rich
-    -`pip install rich`
+- Install Rich library using `pip install rich`
 
 ## Usage
 
 ```bash
 python slyscan.py host1 host2 ... hostN
+```
