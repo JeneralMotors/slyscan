@@ -1,7 +1,9 @@
+import os
 import socket
 import argparse
 from rich.console import Console
 from concurrent.futures import ThreadPoolExecutor
+import concurrent.futures.thread
 
 # Set a timeout for socket operations
 TIMEOUT = 1
@@ -40,19 +42,19 @@ def scan_ports_for_host(host):
         console.print(f"{host} is not a valid host or not reachable on common ports.")
         return
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         # Scan all ports in parallel using ThreadPoolExecutor
         futures = [executor.submit(scan_port, host, port) for port in range(1, 65536)]
 
-        # Collect results from parallel scans
-        for future in futures:
-            try:
+        try:
+            # Collect results from parallel scans
+            for future in concurrent.futures.as_completed(futures):
                 result = future.result()
                 if result:
                     open_ports.append(result)
-            except (Exception, socket.error) as e:
-                # Log the exception for debugging
-                print(f"Exception in scan_ports: {e}")
+        except KeyboardInterrupt:
+            console.print("\n[bold yellow]Scan interrupted by user.[/bold yellow]")
+            executor.shutdown(wait=False)
 
     # Print results for the host
     if open_ports:
@@ -98,7 +100,7 @@ def main():
     hosts = args.hosts
 
     try:
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             # Scan hosts in parallel using ThreadPoolExecutor
             executor.map(scan_ports_for_host, hosts)
     except Exception as e:
