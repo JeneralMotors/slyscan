@@ -1,12 +1,19 @@
 import os
 import socket
 import argparse
+import logging
 from rich.console import Console
 from concurrent.futures import ThreadPoolExecutor
 
 # Set a timeout for socket operations
 TIMEOUT = 1
 COMMON_PORTS = [80, 22, 135, 139, 445, 3389, 25, 3306, 5432, 5900, 6379, 27017, 1433]
+
+# Create a single ThreadPoolExecutor instance
+executor = ThreadPoolExecutor(max_workers=os.cpu_count())
+
+# Initialize a rich console for colorful output
+console = Console()
 
 def is_valid_host(host):
     try:
@@ -32,8 +39,6 @@ def scan_ports_for_host(host):
     Returns:
     None
     """
-    # Initialize a rich console for colorful output
-    console = Console()
     open_ports = []
 
     # Check if the host is valid and reachable on common ports
@@ -41,19 +46,18 @@ def scan_ports_for_host(host):
         console.print(f"{host} is not a valid host or not reachable on common ports.")
         return
 
-    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-        # Scan all ports in parallel using ThreadPoolExecutor
-        futures = [executor.submit(scan_port, host, port) for port in range(1, 65536)]
+    # Scan all ports in parallel using the shared ThreadPoolExecutor instance
+    futures = [executor.submit(scan_port, host, port) for port in range(1, 65536)]
 
-        try:
-            # Collect results from parallel scans
-            for future in concurrent.futures.as_completed(futures):
-                result = future.result()
-                if result:
-                    open_ports.append(result)
-        except KeyboardInterrupt:
-            console.print("\n[bold yellow]Scan interrupted by user.[/bold yellow]")
-            executor.shutdown(wait=False)
+    try:
+        # Collect results from parallel scans
+        for future in concurrent.futures.as_completed(futures):
+            result = future.result()
+            if result:
+                open_ports.append(result)
+    except KeyboardInterrupt:
+        console.print("\n[bold yellow]Scan interrupted by user.[/bold yellow]")
+        executor.shutdown(wait=False)
 
     # Print results for the host
     if open_ports:
@@ -86,7 +90,7 @@ def scan_port(host, port):
                     return f"Port [bold cyan]{port}[/bold cyan] open on {host}: {banner}"
             except (socket.timeout, UnicodeDecodeError) as e:
                 # Log the exception for debugging
-                print(f"Exception in scan_port: {e}")
+                logging.error(f"Exception in scan_port for {host}:{port}: {e}")
                 return f"Port [bold cyan]{port}[/bold cyan] open on {host}: Unable to retrieve banner"
     return None
 
@@ -99,12 +103,11 @@ def main():
     hosts = args.hosts
 
     try:
-        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-            # Scan hosts in parallel using ThreadPoolExecutor
-            executor.map(scan_ports_for_host, hosts)
+        # Scan hosts in parallel using the shared ThreadPoolExecutor instance
+        executor.map(scan_ports_for_host, hosts)
     except Exception as e:
         # Log the exception for debugging
-        print(f"An error occurred: {e}")
+        logging.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     # Entry point of the script
