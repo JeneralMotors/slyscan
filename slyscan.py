@@ -58,7 +58,7 @@ def scan_ports_for_host(host):
     try:
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            if result:
+            if result is not None:  # Corrected line
                 open_ports.append(result)
     except KeyboardInterrupt:
         rprint("\n[bold yellow]Scan interrupted by user.[/bold yellow]")
@@ -67,7 +67,7 @@ def scan_ports_for_host(host):
     if open_ports:
         rprint(f"\n[bold]Results for {host}:[/bold]\n")
         for result in open_ports:
-            rprint(result)
+            rprint(result[2])  # Corrected line
 
 # Main function
 def main():
