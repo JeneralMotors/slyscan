@@ -5,7 +5,7 @@ import logging
 import concurrent.futures
 from rich import print as rprint
 
-# Set the logging level to INFO
+# Set the logging level to ERROR
 logging.basicConfig(level=logging.ERROR)
 
 # Set a timeout for socket operations
