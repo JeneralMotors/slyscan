@@ -3,18 +3,22 @@ import socket
 import argparse
 import logging
 import concurrent.futures
+from rich.progress import Progress
 from rich import print as rprint
+import queue
 
-# Set the logging level to ERROR
+# Set up logging to handle errors
 logging.basicConfig(level=logging.ERROR)
 
-# Set a timeout for socket operations
+# Constants
 TIMEOUT = 1
 COMMON_PORTS = [80, 22, 135, 139, 445, 3389, 25, 3306, 5432, 5900, 6379, 27017, 1433]
 
-# Create a single ThreadPoolExecutor instance
+# Create a ThreadPoolExecutor with maximum workers based on CPU count
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count())
+open_ports_queue = queue.Queue()
 
+# Function to check if a given host is valid and reachable on common ports
 def is_valid_host(host):
     try:
         addrinfo = socket.getaddrinfo(host, None)
@@ -25,6 +29,7 @@ def is_valid_host(host):
     except (socket.gaierror, socket.timeout, ConnectionRefusedError):
         return False
 
+# Function to scan a specific port on a given host
 def scan_port(host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(TIMEOUT)
@@ -34,11 +39,12 @@ def scan_port(host, port):
             try:
                 banner = s.recv(1024).decode('utf-8').strip()
                 if banner:
-                    rprint(f"[bold cyan]Port {port} open on {host}[/bold cyan]: {banner}")
+                    open_ports_queue.put((host, port, banner))
             except (socket.timeout, UnicodeDecodeError) as e:
                 logging.error(f"Exception in scan_port for {host}:{port}: {e}")
                 rprint(f"[bold cyan]Port {port} open on {host}[/bold cyan]: Unable to retrieve banner")
 
+# Function to scan ports for a given host
 def scan_ports_for_host(host):
     open_ports = []
 
@@ -46,6 +52,7 @@ def scan_ports_for_host(host):
         rprint(f"[bold red]{host} is not a valid host or not reachable on common ports.[/bold red]")
         return
 
+    # Use ThreadPoolExecutor to asynchronously scan ports for the current host
     futures = [executor.submit(scan_port, host, port) for port in range(1, 65536)]
 
     try:
@@ -62,6 +69,7 @@ def scan_ports_for_host(host):
         for result in open_ports:
             rprint(result)
 
+# Main function
 def main():
     parser = argparse.ArgumentParser(description="Port scanner")
     parser.add_argument("hosts", nargs="+", help="Hosts to scan")
@@ -69,10 +77,28 @@ def main():
 
     hosts = args.hosts
 
-    try:
-        executor.map(scan_ports_for_host, hosts)
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
+    with Progress() as progress:
+        # Use ThreadPoolExecutor to concurrently scan multiple hosts
+        try:
+            executor.map(scan_ports_for_host, hosts)
+        except Exception as e:
+            logging.error(f"An error occurred: {e}")
 
+    # Process results by grouping them by host
+    results_by_host = {}
+    while not open_ports_queue.empty():
+        result = open_ports_queue.get()
+        host = result[0]
+        if host not in results_by_host:
+            results_by_host[host] = []
+        results_by_host[host].append(result)
+
+    # Display results for open ports grouped by host
+    for host, results in results_by_host.items():
+        rprint(f"\n[bold]Results for {host}:[/bold]\n")
+        for result in results:
+            rprint(f"[bold cyan]Port {result[1]} open on {result[0]}[/bold cyan]: {result[2]}")
+
+# Entry point
 if __name__ == "__main__":
     main()
