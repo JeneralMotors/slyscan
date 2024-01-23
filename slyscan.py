@@ -3,7 +3,6 @@ import socket
 import argparse
 from rich.console import Console
 from concurrent.futures import ThreadPoolExecutor
-import concurrent.futures.thread
 
 # Set a timeout for socket operations
 TIMEOUT = 1
