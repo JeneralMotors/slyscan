@@ -64,11 +64,6 @@ def scan_ports_for_host(host):
         rprint("\n[bold yellow]Scan interrupted by user.[/bold yellow]")
         executor.shutdown(wait=False)
 
-    if open_ports:
-        rprint(f"\n[bold]Results for {host}:[/bold]\n")
-        for result in open_ports:
-            rprint(result[2])  # Corrected line
-
 # Main function
 def main():
     parser = argparse.ArgumentParser(description="Port scanner")
