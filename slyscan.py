@@ -1,5 +1,6 @@
 import socket
 import sys
+import argparse
 from rich.console import Console
 from concurrent.futures import ThreadPoolExecutor
 
@@ -26,7 +27,9 @@ def scan_port(host, port):
                 banner = s.recv(1024).decode('utf-8').strip()
                 if banner:
                     return f"Port [bold cyan]{port}[/bold cyan] open on {host}: {banner}"
-            except (socket.timeout, UnicodeDecodeError):
+            except (socket.timeout, UnicodeDecodeError) as e:
+                # Print the exception to help debugging
+                print(f"Exception in scan_port: {e}")
                 return f"Port [bold cyan]{port}[/bold cyan] open on {host}: Unable to retrieve banner"
     return None
 
@@ -50,9 +53,13 @@ def scan_ports(host, port_range):
 
         # Collect results from parallel scans
         for future in futures:
-            result = future.result()
-            if result:
-                open_ports.append(result)
+            try:
+                result = future.result()
+                if result:
+                    open_ports.append(result)
+            except Exception as e:
+                # Print the exception to help debugging
+                print(f"Exception in scan_ports: {e}")
 
     # Print results for the host
     if open_ports:
@@ -60,12 +67,20 @@ def scan_ports(host, port_range):
         for result in open_ports:
             console.print(result)
 
-if __name__ == "__main__":
-    # Get hosts from command line arguments
-    hosts = sys.argv[1:]
-    # Define the range of ports to scan
+def main():
+    parser = argparse.ArgumentParser(description="Port scanner")
+    parser.add_argument("hosts", nargs="+", help="Hosts to scan")
+    args = parser.parse_args()
+
+    hosts = args.hosts
     port_range = range(1, 65536)
 
-    with ThreadPoolExecutor() as executor:
-        # Scan hosts in parallel using ThreadPoolExecutor
-        executor.map(scan_ports, hosts, [port_range] * len(hosts))
+    try:
+        with ThreadPoolExecutor() as executor:
+            # Scan hosts in parallel using ThreadPoolExecutor
+            executor.map(scan_ports, hosts, [port_range] * len(hosts))
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    main()
