@@ -1,12 +1,17 @@
-# Slyscan
+# Multi-threaded Port Scanner
 
-Slyscan is a Python tool for parallelized port scanning using asyncio and multiprocessing, providing information about open ports on multiple hosts
+This Python module provides a multi-threaded port scanning tool designed to scan multiple hosts for open ports within a specified range. It utilizes concurrent programming with multiprocessing and threading to efficiently scan ports for multiple hosts.
 
-## Features
+## Dependencies
 
-- Multi-threaded port scanning for multiple hosts
+- `socket`
+- `argparse`
+- `multiprocessing`
+- `concurrent.futures.ThreadPoolExecutor`
+- `tqdm`
+- `rich`
 
-## Requirements
+## Example Usage
 
-- Python 3.x
-- Install Rich library using `pip install rich`
+```bash
+$ python port_scanner.py --hosts 192.168.1.1 192.168.1.2 --ports 80 443 8080-8090
