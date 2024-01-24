@@ -1,5 +1,5 @@
 """
-Module: port_scanner
+SlyScan
 
 This module provides a multi-threaded port scanning tool that can scan
 multiple hosts for open ports within a specified range.
@@ -132,7 +132,7 @@ def main():
     Returns:
         None
     """
-    parser = argparse.ArgumentParser(description="Multi-threaded Port Scanner")
+    parser = argparse.ArgumentParser(description="SlyScan - Multithread and multiprocessed portscanning for multiple hosts")
     parser.add_argument("--hosts", nargs="+", required=True, help="Hosts to scan")
     parser.add_argument("--ports", nargs="+", required=True, help="Ports to scan (supports single ports, multiple ports, and port ranges)")
     args = parser.parse_args()
