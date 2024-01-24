@@ -1,39 +1,71 @@
 import asyncio
 import argparse
-from aiomultiprocess import Pool
 from rich.console import Console
-from rich import print
 
-async def scan_port(args):
-    host, port = args
+console = Console()
+
+def parse_ports(ports_arg):
+    """
+    Parse the input ports argument to extract individual ports and port ranges.
+
+    Args:
+        ports_arg (list): List of strings representing ports, port ranges, or a combination.
+
+    Returns:
+        list: List of individual ports.
+    """
+    ports = []
+    for part in ports_arg:
+        if '-' in part:
+            start, end = map(int, part.split('-'))
+            ports.extend(range(start, end + 1))
+        else:
+            ports.append(int(part))
+    return ports
+
+async def scan_port(host, port):
+    """
+    Scan an individual port on the given host.
+
+    Args:
+        host (str): The target host.
+        port (int): The port to scan.
+    """
     try:
-        reader, writer = await asyncio.open_connection(host, port)
-        print(f"[bold blue]Port {port}[/bold blue] on [bold cyan]{host}[/bold cyan] is [bold green]open[/bold green]")
+        _, writer = await asyncio.wait_for(asyncio.open_connection(host, port), timeout=1)
+        console.print(f"Port [green]{port}[/green] is open on {host}")
         writer.close()
-    except (OSError, asyncio.TimeoutError):
-        pass
+        await writer.wait_closed()
+    except (asyncio.TimeoutError, ConnectionRefusedError, OSError):
+        console.print(f"Port [red]{port}[/red] is closed on {host}")
+    except Exception as e:
+        console.print(f"Error scanning port [yellow]{port}[/yellow] on {host}: {e}")
 
-async def scan_ports(hosts, ports):
-    async with Pool() as pool:
-        host_port_combinations = [(host, port) for host in hosts for port in ports]
-        await pool.map(scan_port, host_port_combinations)
+async def scan_ports(host, ports):
+    """
+    Scan the specified ports on the given host using asyncio.
 
-def parse_port_range(port_range):
-    start, end = map(int, port_range.split('-'))
-    return range(start, end + 1)
+    Args:
+        host (str): The target host to scan.
+        ports (list): List of ports to scan.
+    """
+    tasks = [asyncio.create_task(scan_port(host, port)) for port in ports]
+    await asyncio.gather(*tasks)
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Asynchronous Port Scanner')
-    parser.add_argument('hosts', nargs='+', help='Target hosts (space-separated)')
-    parser.add_argument('--ports', type=parse_port_range, default='1-1024', help='Target ports (e.g., 80, 8080, 8000-8100)')
-    return parser.parse_args()
+def main():
+    """
+    Main function to parse command line arguments and initiate the port scanning process.
+    """
+    parser = argparse.ArgumentParser(description="Asyncio Port Scanner")
+    parser.add_argument("--hosts", nargs="+", required=True, help="Hosts to scan")
+    parser.add_argument("--ports", nargs="+", required=True, help="Ports to scan (supports single ports, multiple ports, and port ranges)")
+    args = parser.parse_args()
 
-async def main():
-    args = parse_args()
+    hosts = args.hosts
+    ports = parse_ports(args.ports)
 
-    console = Console()
-    with console.status("[bold magenta]Scanning in progress...[/bold magenta]"):
-        await scan_ports(args.hosts, args.ports)
+    for host in hosts:
+        asyncio.run(scan_ports(host, ports))
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
