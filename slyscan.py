@@ -1,4 +1,5 @@
-"""
+  GNU nano 7.2                                                                                                                                                                                                                         slyscan2.py                                                                                                                                                                                                                                   
+"""    
 SlyScan
 
 This script provides a multi-threaded port scanning tool that can scan
@@ -23,7 +24,7 @@ Example Usage:
 
 import socket
 import argparse
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager, Lock
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
 from rich.console import Console
@@ -49,7 +50,7 @@ def parse_ports(ports_arg):
             ports.append(int(part))
     return ports
 
-def scan_ports(host, ports, progress_dict, open_ports_dict, host_count, update_interval=1700):
+def scan_ports(host, ports, progress_dict, open_ports_dict, host_count, update_interval=2000, lock=None):
     """
     Scan the specified ports for a given host using multi-threading.
 
@@ -60,13 +61,14 @@ def scan_ports(host, ports, progress_dict, open_ports_dict, host_count, update_i
         open_ports_dict (Manager.dict): Dictionary to store open ports for each host.
         host_count (int): Total number of hosts to scan.
         update_interval (int): Progress update interval for the tqdm bar.
+        lock (multiprocessing.Lock): Lock for updating the progress bar.
 
     Returns:
         None
     """
     open_ports = []
 
-    with ThreadPoolExecutor(max_workers=100) as executor:
+    with ThreadPoolExecutor(max_workers=85) as executor:
         progress_bar = tqdm(total=len(ports), position=progress_dict[host],
                            desc=f"Scanning {host} ({progress_dict[host]+1}/{host_count})", leave=False)
 
@@ -77,18 +79,20 @@ def scan_ports(host, ports, progress_dict, open_ports_dict, host_count, update_i
             if result:
                 open_ports.append(result)
             if i % update_interval == 0:
-                progress_bar.update(update_interval)
+                with lock:
+                    progress_bar.update(update_interval)
 
         remaining = len(ports) % update_interval
-        if remaining:
-            progress_bar.update(remaining)
+        if remaining: 
+            with lock:
+                progress_bar.update(remaining)
 
         progress_bar.close()
 
     open_ports_dict[host] = open_ports
 
 def scan_port(host, port):
-    """
+    """  
     Scan a specific port for a given host.
 
     Args:
@@ -140,21 +144,20 @@ def main():
     hosts = args.hosts
     ports = parse_ports(args.ports)
 
-    # Use Manager to share progress_dict and open_ports_dict among processes
     with Manager() as manager:
         progress_dict = manager.dict({host: i for i, host in enumerate(hosts)})
         open_ports_dict = manager.dict()
+        lock = Lock()
 
         processes = []
         for host in hosts:
-            p = Process(target=scan_ports, args=(host, ports, progress_dict, open_ports_dict, len(hosts)))
+            p = Process(target=scan_ports, args=(host, ports, progress_dict, open_ports_dict, len(hosts), 2000, lock))
             p.start()
             processes.append(p)
 
         for p in processes:
             p.join()
 
-        # Print results once all hosts have finished scanning
         for host in hosts:
             open_ports = open_ports_dict[host]
             print_open_ports(host, open_ports)
