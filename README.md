@@ -40,3 +40,8 @@ This Python script provides a multi-threaded port scanning tool designed to scan
 
 ```bash
 $ python port_scanner.py --hosts 192.168.1.1 192.168.1.2 --ports 80 443 8080-8090
+
+```
+![Alt text](https://github.com/JeneralMotors/slyscan/blob/main/resources/slyscan-midscan.png)
+
+![Alt text](https://github.com/JeneralMotors/slyscan/blob/main/resources/slyscan-finished.png)
