@@ -44,10 +44,10 @@ $ python port_scanner.py --hosts 192.168.1.1 192.168.1.2 --ports 80 443 8080-809
 
 ## Output
 ```
-                    While scanning:
+[i] While scanning:
 ```
 ![Alt text](https://github.com/JeneralMotors/slyscan/blob/main/resources/slyscan-midscan.png)
 ```
-                    Execution finished:
+[i] Execution finished:
 ```
 ![Alt text](https://github.com/JeneralMotors/slyscan/blob/main/resources/slyscan-finished.png)
