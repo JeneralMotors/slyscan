@@ -33,13 +33,7 @@ This Python script provides a multi-threaded port scanning tool designed to scan
 
 - **Robust Port Parsing:** Parses a variety of port specifications, including single ports and port ranges, ensuring flexibility in configuration.
 
-- **Efficient Thread Pooling:** Employs a ThreadPoolExecutor for efficient distribution of port scanning tasks among threads.
-
-- **Comprehensive Result Printing:** Displays detailed results, including open ports for each scanned host, in a clear and organized format.
-
 - **Cross-platform Compatibility:** Designed to work seamlessly across different platforms, providing a consistent experience.
-
-- **Manager for Shared Data:** Utilizes the `Manager` class to share data (progress and open ports) among processes, ensuring synchronized and accurate results.
 
 ## Example Usage
 
