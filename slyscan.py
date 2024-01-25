@@ -1,7 +1,7 @@
 """
 SlyScan
 
-This module provides a multi-threaded port scanning tool that can scan
+This script provides a multi-threaded port scanning tool that can scan
 multiple hosts for open ports within a specified range.
 
 It utilizes concurrent programming with multiprocessing and threading to
