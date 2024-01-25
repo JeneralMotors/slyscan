@@ -1,9 +1,9 @@
 ```
 #          🐍 SlyScan 🐍  
 
-Multi-threaded   |
-Multi-processed  |  Port Scanner
-Multi-host       |
+Multi-threaded  |
+Multi-processed | Port Scanner
+Multi-host      |
 ```
 
 This Python script provides a multi-threaded port scanning tool designed to scan multiple hosts for open ports within a specified range. It utilizes concurrent programming with multiprocessing and threading to efficiently scan ports for multiple hosts.
