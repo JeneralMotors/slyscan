@@ -1,5 +1,5 @@
 ```
-#          🐍 SlyScan 🐍  
+          🐍 SlyScan 🐍  
 
 Multi-threaded  |
 Multi-processed | Port Scanner
