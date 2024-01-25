@@ -1,4 +1,3 @@
-  GNU nano 7.2                                                                                                                                                                                                                         slyscan2.py                                                                                                                                                                                                                                   
 """    
 SlyScan
 
