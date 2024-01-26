@@ -60,5 +60,5 @@ $ python port_scanner.py --hosts 192.168.1.1 192.168.1.2 --ports 80 443 8080-809
 ## Performance
 
 * Passing **2 hosts** and a **portrange of 1-65535** as arguments to the script:
-  * in a **4 thread CPU** takes on **average 100 seconds to completely scan the hosts ports**.
+  * In a **4 thread CPU** takes on **average 100 seconds to completely scan the hosts ports**.
 * **RESULTS** are **ALWAYS ACCURATE** *unless* the **packets** are being **BLOCKED** by *Network security measures*, such as **firewalls**.
