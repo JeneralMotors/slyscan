@@ -11,12 +11,12 @@ This Python script provides a multi-threaded port scanning tool designed to scan
 
 ## Dependencies
 
-- `socket`
-- `argparse`
-- `multiprocessing`
-- `concurrent.futures.ThreadPoolExecutor`
-- `tqdm`
-- `rich`
+- *`socket`*
+- *`argparse`*
+- *`multiprocessing`*
+- *`concurrent.futures.ThreadPoolExecutor`*
+- *`tqdm`*
+- *`rich`*
 
 ## Features
 
