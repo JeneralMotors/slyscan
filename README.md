@@ -44,7 +44,7 @@ This Python script provides a multi-threaded port scanning tool designed to scan
 ## Example Usage
 
 ```bash
-$ python port_scanner.py --hosts 192.168.1.1 192.168.1.2 --ports 80 443 8080-8090
+$ python slyscan.py --hosts 192.168.1.1 192.168.1.2 --ports 80 443 8080-8090
 ```
 
 ## Output
